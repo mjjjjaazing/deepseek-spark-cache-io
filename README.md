@@ -1,12 +1,28 @@
-# DeepSeek Spark cache I/O backpressure
+# DeepSeek Spark cache I/O and fresh-chat startup
 
-An **experimental, opt-in host scheduling patch** on top of [MiaAI-Lab’s DeepSeek-V4.1-Flash-1017 recipe](https://github.com/MiaAI-Lab/DeepSeek-v4.1-Flash-1017-2x-DGX-Sparks), tested on two NVIDIA DGX Spark / GB10 nodes.
+Two **experimental, opt-in extensions** on top of [MiaAI-Lab’s DeepSeek-V4.1-Flash-1017 recipe](https://github.com/MiaAI-Lab/DeepSeek-v4.1-Flash-1017-2x-DGX-Sparks), tested on two NVIDIA DGX Spark / GB10 nodes.
 
-The patch lets pending prompt-cache I/O make progress before a long image prefill blocks the engine’s host loop. In our controlled workloads it avoided a restore timeout and unnecessary context recomputation. **It does not increase the model’s raw decoding speed.**
+The original I/O patch lets pending prompt-cache I/O make progress before a long image prefill blocks the engine’s host loop. In our controlled workloads it avoided a restore timeout and unnecessary context recomputation. **It does not increase the model’s raw decoding speed.**
 
-![Measured improvements and mechanism](assets/improvement.png)
+## Fresh-chat startup update — 29 October 2026
 
-## Measured results
+A second patch adds an exact shared-prefix checkpoint before volatile per-chat metadata. It helps new Aside conversations reuse common system instructions; it does not rewrite prompts or make truly empty-cache prefill instant.
+
+| Two concurrent new Aside chats | Faster first signal | Slower first signal |
+|---|---:|---:|
+| Original I/O patch off | 17.281 s | 34.547 s |
+| Original I/O patch on | 17.150 s | 34.391 s |
+| Both patches, final confirmation with shared prefix available | **4.993 s** | **11.577 s** |
+
+The final pair had **67.9% less mean wait for first streamed reasoning/content/tool signal** and **53.3% less mean wait for first content text** versus I/O-on. These are finite descriptive comparisons, not byte-identical real-client inputs, population estimates, UI-paint timings, or raw decode speedups. The client retained high reasoning and a 16,384-token output allowance. A completely empty candidate cache still took **17.652 / 24.409 seconds** for its first two chats.
+
+Twelve candidate chats completed browser tasks correctly; two native exact-output controls and disk recovery after restarts passed. **The original 12-second gate failed at 12.114 seconds and rolled back.** A disclosed review then used a 15-second first-signal / 20-second committed-message threshold; a new confirmation pair passed before adoption. The earlier 351-request I/O campaign below does **not** validate this new patch. [Startup design, all measurements, limitations and reproduction](docs/aside-startup.md).
+
+The new overlay is included only with `tools/prepare.py --with-shared-prefix`; both optimizations remain runtime opt-in. Existing source-only preparation without that option still produces the original I/O recipe.
+
+![Original cache-I/O results and mechanism; not startup results](assets/improvement.png)
+
+## Original cache-I/O measured results
 
 Every request in the main comparison allowed **32,768 output tokens**. Both arms used the same candidate binary, model, precision, limits, workload and frozen starting disk-cache contents; only the new switch changed.
 
@@ -27,9 +43,9 @@ Validation covered **351 completed requests**, **108 exact paired output compari
 
 MiaAI provides the two-Spark recipe, pinned components, packaging and deployment integration, including the EAQ model pack. TensorFold and BertholomusAI provide the native engine, DeepSeek family, kernels and distributed execution. The existing spill/parking work and prefill interleave come from their credited contributors.
 
-**Our addition is small:** one default-off switch, a bounded host-side gate for long image prefills, eight regression tests, and reproducibility/measurement tools. No new model, quantization, CUDA kernel, RDMA implementation or cache format is introduced. See [attribution](docs/attribution.md) and the retained [upstream credits](licenses/MiaAI-CREDITS.md).
+**Our additions:** a bounded host-side gate for long image prefills with eight regression tests; an optional exact shared-prefix checkpoint and metadata-only stream timing with CPU checks; and reproducibility/measurement tools. No new model, quantization, CUDA kernel, RDMA implementation or cache format is introduced. See [attribution](docs/attribution.md) and the retained [upstream credits](licenses/MiaAI-CREDITS.md).
 
-## How it works
+## How the I/O gate works
 
 ```mermaid
 flowchart LR
@@ -93,6 +109,6 @@ Raw private operational archives are intentionally not published. The public dat
 
 ## Status and license
 
-The policy was retained on the measured pair after validation on 29 October 2026. This independent repository is not endorsed by MiaAI, TensorFold, DeepSeek or NVIDIA. It is not an exhaustive novelty claim or a claim to fix every upstream cache issue.
+The I/O policy was retained after its original validation; the shared-prefix extension was retained after the separately documented startup adoption review on 29 October 2026. This independent repository is not endorsed by MiaAI, TensorFold, DeepSeek or NVIDIA. It is not an exhaustive novelty claim or a claim to fix every upstream cache issue.
 
 Apache-2.0 for this extension; inherited material retains its notices and licenses. See [LICENSE](LICENSE), [NOTICE](NOTICE) and [licenses/](licenses/).

@@ -1,0 +1,270 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-29",
+  "client_output_allowance": 16384,
+  "reasoning_effort": "high",
+  "candidate_fresh_chat_count": 12,
+  "rows": [
+    {
+      "phase": "io-off",
+      "tag": "B",
+      "prompt_tokens": 32786,
+      "cached_tokens": 0,
+      "first_signal_s": 17.280782682006247,
+      "first_content_s": 17.280782682006247
+    },
+    {
+      "phase": "io-off",
+      "tag": "A",
+      "prompt_tokens": 32784,
+      "cached_tokens": 0,
+      "first_signal_s": 34.546836493944284,
+      "first_content_s": 34.546836493944284
+    },
+    {
+      "phase": "io-on",
+      "tag": "B",
+      "prompt_tokens": 32762,
+      "cached_tokens": 0,
+      "first_signal_s": 17.150351952004712,
+      "first_content_s": 17.150351952004712
+    },
+    {
+      "phase": "io-on",
+      "tag": "A",
+      "prompt_tokens": 32773,
+      "cached_tokens": 0,
+      "first_signal_s": 34.390634899027646,
+      "first_content_s": 34.390634899027646
+    },
+    {
+      "phase": "cold",
+      "tag": "A",
+      "prompt_tokens": 33768,
+      "cached_tokens": 0,
+      "first_signal_s": 17.652,
+      "first_content_s": 17.652,
+      "aside_committed_observed_s": 26.31458306312561
+    },
+    {
+      "phase": "cold",
+      "tag": "B",
+      "prompt_tokens": 33754,
+      "cached_tokens": 22528,
+      "first_signal_s": 24.409,
+      "first_content_s": 24.409,
+      "aside_committed_observed_s": 26.827666997909546
+    },
+    {
+      "phase": "warm1",
+      "tag": "A",
+      "prompt_tokens": 33774,
+      "cached_tokens": 24576,
+      "first_signal_s": 11.481,
+      "first_content_s": 11.481,
+      "aside_committed_observed_s": 13.924529075622559
+    },
+    {
+      "phase": "warm1",
+      "tag": "B",
+      "prompt_tokens": 33757,
+      "cached_tokens": 24576,
+      "first_signal_s": 4.836,
+      "first_content_s": 12.385,
+      "aside_committed_observed_s": 14.684566020965576
+    },
+    {
+      "phase": "warm2",
+      "tag": "A",
+      "prompt_tokens": 33769,
+      "cached_tokens": 24576,
+      "first_signal_s": 10.315,
+      "first_content_s": 13.209,
+      "aside_committed_observed_s": 15.574819087982178
+    },
+    {
+      "phase": "warm2",
+      "tag": "B",
+      "prompt_tokens": 33740,
+      "cached_tokens": 24576,
+      "first_signal_s": 6.049,
+      "first_content_s": 6.049,
+      "aside_committed_observed_s": 14.053859949111938
+    },
+    {
+      "phase": "warm3",
+      "tag": "A",
+      "prompt_tokens": 33754,
+      "cached_tokens": 24576,
+      "first_signal_s": 10.282,
+      "first_content_s": 13.449,
+      "aside_committed_observed_s": 15.67999005317688
+    },
+    {
+      "phase": "warm3",
+      "tag": "B",
+      "prompt_tokens": 33743,
+      "cached_tokens": 24576,
+      "first_signal_s": 4.922,
+      "first_content_s": 12.405,
+      "aside_committed_observed_s": 14.922111988067627
+    },
+    {
+      "phase": "postrestart",
+      "tag": "A",
+      "prompt_tokens": 33754,
+      "cached_tokens": 24576,
+      "first_signal_s": 12.114,
+      "first_content_s": 12.114,
+      "aside_committed_observed_s": 14.979075908660889
+    },
+    {
+      "phase": "postrestart",
+      "tag": "B",
+      "prompt_tokens": 33740,
+      "cached_tokens": 24576,
+      "first_signal_s": 5.029,
+      "first_content_s": 14.532,
+      "aside_committed_observed_s": 17.76819610595703
+    },
+    {
+      "phase": "confirmation",
+      "tag": "A",
+      "prompt_tokens": 33754,
+      "cached_tokens": 24576,
+      "first_signal_s": 11.577,
+      "first_content_s": 11.577,
+      "aside_committed_observed_s": 14.990839004516602
+    },
+    {
+      "phase": "confirmation",
+      "tag": "B",
+      "prompt_tokens": 33740,
+      "cached_tokens": 24576,
+      "first_signal_s": 4.993,
+      "first_content_s": 12.473,
+      "aside_committed_observed_s": 15.750968933105469
+    }
+  ],
+  "candidate_phases": [
+    {
+      "phase": "cold",
+      "accounting_clean": true,
+      "completed_model_requests": 13,
+      "committed_disk_restore_delta": 0,
+      "browser_tasks_correct": 2,
+      "owned_tabs_remaining": 0
+    },
+    {
+      "phase": "warm1",
+      "accounting_clean": true,
+      "completed_model_requests": 11,
+      "committed_disk_restore_delta": 0,
+      "browser_tasks_correct": 2,
+      "owned_tabs_remaining": 0
+    },
+    {
+      "phase": "warm2",
+      "accounting_clean": true,
+      "completed_model_requests": 13,
+      "committed_disk_restore_delta": 0,
+      "browser_tasks_correct": 2,
+      "owned_tabs_remaining": 0
+    },
+    {
+      "phase": "warm3",
+      "accounting_clean": true,
+      "completed_model_requests": 15,
+      "committed_disk_restore_delta": 0,
+      "browser_tasks_correct": 2,
+      "owned_tabs_remaining": 0
+    },
+    {
+      "phase": "postrestart",
+      "accounting_clean": true,
+      "completed_model_requests": 11,
+      "committed_disk_restore_delta": 1,
+      "browser_tasks_correct": 2,
+      "owned_tabs_remaining": 0
+    },
+    {
+      "phase": "confirmation",
+      "accounting_clean": true,
+      "completed_model_requests": 11,
+      "committed_disk_restore_delta": 1,
+      "browser_tasks_correct": 2,
+      "owned_tabs_remaining": 0
+    }
+  ],
+  "native_exact_controls": [
+    {
+      "arm": "control",
+      "case": 0,
+      "payload_sha256": "182613c95b8f5d875dd0ad4f038a609c53d96c451aa9a46ceab8a27122176d6c",
+      "ttft_s": 14.9798338090186,
+      "prompt_tokens": 33039,
+      "cached_tokens": 0,
+      "output_tokens": 512,
+      "full_token_ids_sha256": "4205f32cf338474743fbf6a7b5b590cc0184ccc64ca54b396d00adbd7c002bba",
+      "content_sha256": "285148538c99827c54b3efe6f1720e58c0847e0ae8622e23066af45d4ee27cf4",
+      "accounting_clean": true
+    },
+    {
+      "arm": "control",
+      "case": 1,
+      "payload_sha256": "d66f4fe08a1d81b3348c405a89f2e0d2f5b7c694455c899f12d7bd4279d0e390",
+      "ttft_s": 14.200659774011001,
+      "prompt_tokens": 33039,
+      "cached_tokens": 0,
+      "output_tokens": 512,
+      "full_token_ids_sha256": "61aec66bb6a694e08015088f9ae58124b5dc0285c56f9d41b928b9521f64b5a1",
+      "content_sha256": "d9b3f6fba21e425b4969ec2fdbc542a8e990529f6ec8600b92733f920182a71d",
+      "accounting_clean": true
+    },
+    {
+      "arm": "candidate",
+      "case": 0,
+      "payload_sha256": "182613c95b8f5d875dd0ad4f038a609c53d96c451aa9a46ceab8a27122176d6c",
+      "ttft_s": 14.328066025977023,
+      "prompt_tokens": 33039,
+      "cached_tokens": 0,
+      "output_tokens": 512,
+      "full_token_ids_sha256": "4205f32cf338474743fbf6a7b5b590cc0184ccc64ca54b396d00adbd7c002bba",
+      "content_sha256": "285148538c99827c54b3efe6f1720e58c0847e0ae8622e23066af45d4ee27cf4",
+      "accounting_clean": true
+    },
+    {
+      "arm": "candidate",
+      "case": 1,
+      "payload_sha256": "d66f4fe08a1d81b3348c405a89f2e0d2f5b7c694455c899f12d7bd4279d0e390",
+      "ttft_s": 4.888918945973273,
+      "prompt_tokens": 33039,
+      "cached_tokens": 22528,
+      "output_tokens": 512,
+      "full_token_ids_sha256": "61aec66bb6a694e08015088f9ae58124b5dc0285c56f9d41b928b9521f64b5a1",
+      "content_sha256": "d9b3f6fba21e425b4969ec2fdbc542a8e990529f6ec8600b92733f920182a71d",
+      "accounting_clean": true
+    }
+  ],
+  "original_gate": {
+    "first_signal_limit_s": 12,
+    "aside_observed_limit_s": 18,
+    "passed": false,
+    "miss_s": 12.114,
+    "automatic_rollback": true
+  },
+  "adoption_review": {
+    "first_signal_limit_s": 15,
+    "aside_observed_limit_s": 20,
+    "new_confirmation_passed": true,
+    "retained": true,
+    "post_observation_threshold_change": true
+  },
+  "baseline_caveats": {
+    "io_off": "Correct codes and browser visits; extra prose failed strict-format harness. Final whole-run accounting unavailable. Retained timing evidence, not a fully passed arm.",
+    "io_on": "Browser tasks and accounting passed; controller later restored production after a bounded hold timeout."
+  },
+  "comparison_caveat": "Finite real-Aside runs with dynamic prompts, not byte-identical requests or a latency SLA.",
+  "measurement_note": "First signal is streamed reasoning/content/tool; content excludes reasoning; Aside observed is a committed-message API poll, not screen paint. Initial rows are two new concurrent chats; auxiliary requests counted separately.",
+  "sanitization": "Only allowlisted timings, counts, synthetic control hashes and outcomes. No personal/chat/session/request IDs, paths, addresses, prompt/reply text, credentials or KV data."
+}

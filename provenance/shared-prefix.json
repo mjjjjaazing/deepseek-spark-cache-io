@@ -1,0 +1,26 @@
+{
+  "patch": "9999-shared-prefix-checkpoint.patch",
+  "publication_patch_sha256": "a5d13a9a08f64e2a9932e21e2285799d59f6a3e0f5f5f87085e6d7f53f706f7a",
+  "measured_patch_sha256": "38c91b151a8b760607bc85f1db6c1b33a102a5fad5cce9e50b8cce5bd9e6fedb",
+  "publication_difference": "Two module-documentation notice lines prepended to each of four files. Runtime and tests otherwise byte-identical to measured source.",
+  "notice_lines_per_file": 2,
+  "baseline_file_hashes": {
+    "zig/src/server/chat.zig": "a3d81c1f31f22234ae5c9eab972df1644b7569a78bae08e105e45a770e942d8f",
+    "zig/src/server/openai.zig": "42ee34aea032443fd097058caff2bbf2c56c61e9163e961b5980e47407ed2f66"
+  },
+  "measured_file_hashes": {
+    "zig/src/server/chat.zig": "19e9cdeda6f80a4fba5f5bf8552bac6f020c34eb18e00389ad5d622b38816a6c",
+    "zig/src/server/openai.zig": "b714f9c0c1180f9ccd3afc311f5b08518cf487b5f8819d38e6b8e63537fb0572",
+    "zig/src/server/shared_checkpoint.zig": "0c8dc583c11fbded16d3b9deb53e89a2b0d0b24547265e8d84d504d566f325d3",
+    "zig/src/server/response_timing.zig": "38714f78f371a2f85aefdde96842832fb12123da90c950a296504e87954c82e7"
+  },
+  "publication_file_hashes": {
+    "zig/src/server/chat.zig": "49113fd1730c88d8224c8554abc0f0e23037079e34f09acff3e36fd644112329",
+    "zig/src/server/openai.zig": "63329787dcc279511d7a77492c65d2f2df4dc1654bb52b89cea7f79cdbae78d5",
+    "zig/src/server/shared_checkpoint.zig": "d558a3d5bca8650ee0963540ff2ee206e1770ccd57c081cd9bf48558f702861e",
+    "zig/src/server/response_timing.zig": "528ee266e2b028794cfbb76ccded5b008ce99a48355aef90447e3e7f7ae40485"
+  },
+  "measured_native_sha256": "378a526b52194b738d3c6f746f4e36e12bc2190267377fb45da62b21dd448322",
+  "native_binary_note": "Measured private build fingerprint only; publication adds comments, so rebuilt binary hashes need not match. No binaries distributed.",
+  "worker_and_cuda_kernels_changed": false
+}

@@ -1,0 +1,29 @@
+{
+  "date": "2026-10-29",
+  "source_only_preparation": {
+    "recipe_commit": "27741e176a9e5b98c10c9c7d012fd3e4fcdc19b6",
+    "engine_commit": "629c524a0ea57512a5342abb498d1b7c25353343",
+    "baseline_files_matched": 1311,
+    "both_overlays_apply_in_order": true,
+    "published_runtime_matches_measured_except_notice_comments": true,
+    "default_io_only_preserved": true
+  },
+  "cpu_tests": {
+    "server": 84,
+    "host": 97,
+    "shared_checkpoint_module": 2,
+    "response_timing_module_including_imports": 7,
+    "all_passed": true
+  },
+  "synthetic_control_payloads_match_measured": 2,
+  "original_351_request_dataset_checker": "passed",
+  "startup_dataset_checker": "passed",
+  "hardware_or_service_changed_during_publication": false,
+  "offline_runner_checks": {
+    "control_candidate": true,
+    "interference_stops_before_next_request": true,
+    "mismatched_output_rejected": true,
+    "missing_reference_sends_nothing": true,
+    "dry_run_sends_nothing": true
+  }
+}

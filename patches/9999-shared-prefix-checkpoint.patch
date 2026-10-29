@@ -1,0 +1,164 @@
+--- a/zig/src/server/chat.zig
++++ b/zig/src/server/chat.zig
+@@ -1,3 +1,5 @@
++//! Modified/added by deepseek-spark-cache-io contributors, 2026-10-29.
++//! Shared-prefix checkpoint and optional stream timing extension; Apache-2.0.
+ //! One reply, as ``ChatApp.chat`` makes it: render, submit to the engine, stream text, reasoning and calls.
+ const std = @import("std");
+ const api = @import("engine_api");
+@@ -172,6 +174,10 @@
+     }
+     const system_len: usize = if (input.prompt != null) 0 else prompt_mod.systemPrefixLen(srv, cx, input.messages, input.tools, rendered.ids, thinking, effort);
+     var shared: std.ArrayList(u32) = .empty;
++    // Keep an operator-selected, exact common-prefix checkpoint before volatile
++    // client metadata. No text, cache key, sampling rule or model math is changed.
++    const extra_shared_raw: ?[]const u8 = if (std.c.getenv("TF_DS_SHARED_PREFIX_TOKENS")) |v| std.mem.span(v) else null;
++    if (@import("shared_checkpoint.zig").configured(extra_shared_raw, system_len)) |cut| try shared.append(a, cut);
+     if (system_len > 0) for ([_]i64{ @as(i64, @intCast(system_len)) - 2048, @as(i64, @intCast(system_len)) - 512, @intCast(system_len) }) |cut| {
+         if (cut >= 512) try shared.append(a, @intCast(cut));
+     };
+--- a/zig/src/server/openai.zig
++++ b/zig/src/server/openai.zig
+@@ -1,3 +1,5 @@
++//! Modified/added by deepseek-spark-cache-io contributors, 2026-10-29.
++//! Shared-prefix checkpoint and optional stream timing extension; Apache-2.0.
+ //! POST /v1/chat/completions and /v1/completions, JSON or SSE, as ``server.http`` answers them.
+ const std = @import("std");
+ const json = @import("json.zig");
+@@ -246,6 +248,8 @@
+     created: i64,
+     streamed_prose: bool = false,
+     prose_sent: std.ArrayList(u8) = .empty, // the content a tool stream sent
++    timing_start: ?i96 = null,
++    timing: @import("response_timing.zig").Seen = .{},
+ 
+     fn chunk(r: *Run, delta: ?Value, finish: ?[]const u8) Allocator.Error!Value {
+         const a = r.a;
+@@ -272,7 +276,8 @@
+     }
+ 
+     fn emit(r: *Run, payload: Value) error{Closed}!void {
+-        return r.out.vt.event(r.out.ctx, payload);
++        try r.out.vt.event(r.out.ctx, payload);
++        if (r.timing_start != null) r.timing.note(payload, std.Io.Clock.awake.now(r.srv.io).toNanoseconds());
+     }
+ 
+     fn usage(r: *Run, reply: *const chat.Reply) Allocator.Error!Value {
+@@ -451,6 +456,13 @@
+             };
+             compaction = ready.stamp;
+             break :blk ready.prepared;
++        };
++        if (std.c.getenv("TENSORFOLD_STREAM_TIMING")) |value| if (std.mem.eql(u8, std.mem.span(value), "1")) {
++            r.timing_start = prepared.received;
++        };
++        defer if (r.timing_start) |start| {
++            const timing = @import("response_timing.zig");
++            log.line("stream-timing {s} probe={c} first_reasoning_ms={d} first_content_ms={d} first_tool_ms={d}", .{ r.id, timing.probeTag(r.plan.input.messages), timing.milliseconds(r.timing.reasoning, start), timing.milliseconds(r.timing.content, start), timing.milliseconds(r.timing.tool, start) });
+         };
+         var handed = false; // generate gives the preparing count back from here on
+         defer if (!handed) chat.release(r.srv, prepared.preparing);
+--- /dev/null
++++ b/zig/src/server/shared_checkpoint.zig
+@@ -0,0 +1,26 @@
++//! Modified/added by deepseek-spark-cache-io contributors, 2026-10-29.
++//! Shared-prefix checkpoint and optional stream timing extension; Apache-2.0.
++//! Optional additional shared-system-prefix checkpoint. It never changes prompt tokens.
++const std = @import("std");
++
++pub fn configured(raw: ?[]const u8, system_len: usize) ?u32 {
++    const text = raw orelse return null;
++    const cut = std.fmt.parseInt(u32, text, 10) catch return null;
++    if (cut < 2048 or cut % 2048 != 0) return null;
++    if (cut > system_len -| 2048) return null;
++    return cut;
++}
++
++test "extra shared checkpoint is default-off and rejects malformed or unaligned values" {
++    for ([_]?[]const u8{ null, "", "0", "-2048", "1", "8193", " 8192", "18446744073709551615" }) |raw| {
++        try std.testing.expectEqual(@as(?u32, null), configured(raw, 100000));
++    }
++}
++
++test "extra checkpoint stays inside a long system prefix with a full chunk remaining" {
++    try std.testing.expectEqual(@as(?u32, 22528), configured("22528", 31881));
++    try std.testing.expectEqual(@as(?u32, 22528), configured("22528", 24576));
++    try std.testing.expectEqual(@as(?u32, null), configured("22528", 24575));
++    try std.testing.expectEqual(@as(?u32, null), configured("22528", 100));
++    try std.testing.expectEqual(@as(?u32, null), configured("22528", 0));
++}
+--- /dev/null
++++ b/zig/src/server/response_timing.zig
+@@ -0,0 +1,72 @@
++//! Modified/added by deepseek-spark-cache-io contributors, 2026-10-29.
++//! Shared-prefix checkpoint and optional stream timing extension; Apache-2.0.
++//! Metadata-only first streamed-event timings; no response or prompt text retained.
++const std = @import("std");
++const json = @import("json.zig");
++pub const Seen = struct {
++    reasoning: ?i96 = null,
++    content: ?i96 = null,
++    tool: ?i96 = null,
++    pub fn note(s: *Seen, payload: json.Value, now: i96) void {
++        const choices = payload.get("choices") orelse return;
++        if (choices != .array) return;
++        for (choices.array) |choice| {
++            const delta = choice.get("delta") orelse choice;
++            if (s.reasoning == null and (visible(delta.strField("reasoning_content")) or visible(delta.strField("reasoning")))) s.reasoning = now;
++            if (s.content == null and (visible(delta.strField("content")) or visible(choice.strField("text")))) s.content = now;
++            if (s.tool == null) if (delta.get("tool_calls")) |calls| if (calls == .array) {
++                for (calls.array) |call| if (call.get("function")) |f| {
++                    if (visible(f.strField("name")) or visible(f.strField("arguments"))) { s.tool = now; break; }
++                };
++            };
++        }
++    }
++};
++fn visible(text: ?[]const u8) bool {
++    return if (text) |s| std.mem.trim(u8, s, " \r\n\t").len > 0 else false;
++}
++pub fn milliseconds(at: ?i96, start: i96) i64 {
++    return if (at) |t| @intCast(@divTrunc(@max(0, t - start), std.time.ns_per_ms)) else -1;
++}
++pub fn probeTag(messages: json.Value) u8 {
++    if (messages != .array) return '-';
++    for (messages.array) |message| {
++        if (!std.mem.eql(u8, message.strField("role") orelse "", "user")) continue;
++        const content = message.get("content") orelse continue;
++        if (content == .string) {
++            if (tagIn(content.string)) |tag| return tag;
++        } else if (content == .array) {
++            for (content.array) |part| if (part.strField("text")) |text| {
++                if (tagIn(text)) |tag| return tag;
++            };
++        }
++    }
++    return '-';
++}
++fn tagIn(text: []const u8) ?u8 {
++    const marker = "ASIDE_STARTUP_PROBE_20261029_";
++    const at = std.mem.indexOf(u8, text, marker) orelse return null;
++    const next = at + marker.len;
++    if (next >= text.len) return null;
++    return if (text[next] == 'A' or text[next] == 'B') text[next] else null;
++}
++test "diagnostic probe tags retain only a known test letter, never system or message text" {
++    var arena = std.heap.ArenaAllocator.init(std.testing.allocator); defer arena.deinit();
++    const a = arena.allocator();
++    try std.testing.expectEqual(@as(u8, 'B'), probeTag((try json.parse(a, "[{\"role\":\"user\",\"content\":\"ASIDE_STARTUP_PROBE_20261029_B private\"}]")).ok));
++    try std.testing.expectEqual(@as(u8, '-'), probeTag((try json.parse(a, "[{\"role\":\"system\",\"content\":\"ASIDE_STARTUP_PROBE_20261029_A\"}]")).ok));
++    try std.testing.expectEqual(@as(u8, '-'), probeTag((try json.parse(a, "[{\"role\":\"user\",\"content\":\"ordinary private request\"}]")).ok));
++}
++test "stream timing ignores empty framing and preserves the first visible event" {
++    var arena = std.heap.ArenaAllocator.init(std.testing.allocator); defer arena.deinit();
++    const a = arena.allocator(); var s: Seen = .{};
++    s.note((try json.parse(a, "{\"choices\":[{\"delta\":{\"role\":\"assistant\",\"content\":\" \",\"reasoning_content\":\"\\n\"}}]}")).ok, 10);
++    try std.testing.expect(s.content == null and s.reasoning == null and s.tool == null);
++    s.note((try json.parse(a, "{\"choices\":[{\"delta\":{\"reasoning_content\":\"reason\"}}]}")).ok, 20);
++    s.note((try json.parse(a, "{\"choices\":[{\"delta\":{\"content\":\"answer\"}}]}")).ok, 30);
++    s.note((try json.parse(a, "{\"choices\":[{\"delta\":{\"content\":\"later\",\"tool_calls\":[{\"function\":{\"name\":\"repl\"}}]}}]}")).ok, 40);
++    try std.testing.expectEqual(@as(?i96, 20), s.reasoning);
++    try std.testing.expectEqual(@as(?i96, 30), s.content);
++    try std.testing.expectEqual(@as(?i96, 40), s.tool);
++    try std.testing.expectEqual(@as(i64, -1), milliseconds(null, 0));
++}

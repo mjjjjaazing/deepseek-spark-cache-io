@@ -21,6 +21,18 @@ Changes in this extension (Apache-2.0 section 4(b)):
   The runtime and test bodies match the measured implementation; those notice
   comments are the only source difference introduced for public distribution.
 
+  patches/9999-shared-prefix-checkpoint.patch modifies
+    zig/src/server/chat.zig
+    zig/src/server/openai.zig
+  and adds
+    zig/src/server/shared_checkpoint.zig
+    zig/src/server/response_timing.zig
+  It adds a default-off aligned shared-prefix checkpoint before volatile client
+  metadata, optional metadata-only first-stream-event timing, and helper tests.
+  Two prominent module-documentation notice lines are prepended to each file;
+  runtime and test bodies otherwise match the measured implementation.
+  Existing TensorFold prefix caching, spill storage and model math are unchanged.
+
 The preparation tools, portable synthetic workloads, result extraction and
 explanatory documentation are additions to this extension. They do not replace
 or claim authorship of the model, quantization, engine, kernels, RDMA transport,

@@ -37,3 +37,9 @@ Retain the original image/configuration and cache directories. Use separate loca
 Rebuilt engine identities can create a new cache namespace, so old histories may have an initial cold turn. To disable this policy in the same candidate image, export `TF_SPILL_IO_BACKPRESSURE=0` and perform a supervised restart. To restore the entire old deployment, use the saved image, configuration and cache together.
 
 Reserve a restoration start within your existing restart budget. Our deployment retained a three-starts-per-30-minute limit and 60-second backoff; these are operational details of our test environment, not new requirements imposed by the patch. No private service-controller scripts are shipped here.
+
+## Optional fresh-chat checkpoint overlay
+
+Pass `--with-shared-prefix` to source preparation to add `9999-shared-prefix-checkpoint.patch` after the I/O overlay. Rebuild through the same pinned recipe. Then review [the client-specific boundary and test procedure](aside-startup.md) before using `config/shared-prefix.example.sh`. The pinned launcher forwards `TF_DS_*` and `TENSORFOLD_*` as well as `TF_SPILL_*` to both ranks. The extra checkpoint is off by default; the timing switch is independent and optional.
+
+Keep the original I/O validation separate from startup validation. A new binary/cache identity can require a cold bootstrap. Preserve your original image, configuration and opaque per-rank caches, and verify real new-client chats and a disk restore after restart before retaining a change. Exporting variables alone does not upgrade an existing image. Setting the checkpoint to zero and restarting disables it without disabling the I/O gate.
