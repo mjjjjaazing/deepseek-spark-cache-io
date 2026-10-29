@@ -1,0 +1,591 @@
+{
+  "original_strict_gates_passed": false,
+  "reviewed_pass": true,
+  "resolved_identity_checks": [
+    "eight-image-turn-1-attempt0 request0 TTFT regression",
+    "eight-image-turn-1-attempt0 request1 TTFT regression",
+    "eight-image-turn-1-attempt0 request6 TTFT regression",
+    "eight-image-turn-2-attempt0 request2 TTFT regression",
+    "eight-image-turn-2-attempt0 request3 TTFT regression",
+    "eight-image-turn-2-attempt0 request5 TTFT regression",
+    "eight-image-turn-3-attempt0 request3 TTFT regression",
+    "growing-four-turn-0-attempt0 request2 TTFT regression",
+    "growing-four-turn-0-attempt0 request2 completion regression",
+    "growing-four-turn-1-attempt0 request0 TTFT regression",
+    "growing-four-turn-2-attempt0 request0 TTFT regression",
+    "growing-four-turn-2-attempt0 request0 completion regression",
+    "growing-four-turn-3-attempt0 request0 TTFT regression",
+    "growing-four-turn-3-attempt0 request2 TTFT regression",
+    "growing-four-turn-3-attempt0 request2 completion regression",
+    "growing-four-turn-4-attempt0 request1 TTFT regression",
+    "growing-four-turn-4-attempt0 request1 completion regression",
+    "growing-four-turn-4-attempt0 request2 TTFT regression",
+    "growing-four-turn-4-attempt0 request2 completion regression"
+  ],
+  "unresolved": [],
+  "same_policy_controls": [
+    {
+      "same_policy": "on",
+      "turn_pair": [
+        1,
+        2
+      ],
+      "per_index_failures": [
+        2,
+        3,
+        4
+      ],
+      "sorted_failures": [],
+      "max_identity_increase_s": 6.303657822951209
+    },
+    {
+      "same_policy": "on",
+      "turn_pair": [
+        1,
+        3
+      ],
+      "per_index_failures": [
+        1,
+        2,
+        3
+      ],
+      "sorted_failures": [],
+      "max_identity_increase_s": 7.859844271966722
+    }
+  ],
+  "simultaneous_batch_distributions": {
+    "eight-image-turn-1-attempt0": {
+      "simultaneous_arrivals": true,
+      "distribution_passed": true,
+      "comparisons": {
+        "ttft_s": {
+          "off_sorted": [
+            1.443681925011333,
+            2.6542994109913707,
+            3.8635823480435647,
+            5.197060998994857,
+            6.396186339959968,
+            7.600246621004771,
+            8.79597510403255,
+            48.302517401985824
+          ],
+          "on_sorted": [
+            1.3861492210417055,
+            2.5930010130396113,
+            3.7884130079764873,
+            4.985315316007473,
+            6.173050625016913,
+            7.995703984983265,
+            9.238584007020108,
+            10.48400761996163
+          ],
+          "violating_ranks": []
+        },
+        "elapsed_s": {
+          "off_sorted": [
+            8.934540170943365,
+            8.93655961699551,
+            8.936691296985373,
+            8.937105938035529,
+            8.938870439014863,
+            8.939337287971284,
+            8.94134945498081,
+            48.36060211196309
+          ],
+          "on_sorted": [
+            6.291807953035459,
+            6.294349165051244,
+            6.294398733007256,
+            6.295762202993501,
+            6.296844521013554,
+            8.051874191034585,
+            9.300027870049234,
+            10.544281628972385
+          ],
+          "violating_ranks": []
+        }
+      }
+    },
+    "eight-image-turn-2-attempt0": {
+      "simultaneous_arrivals": true,
+      "distribution_passed": true,
+      "comparisons": {
+        "ttft_s": {
+          "off_sorted": [
+            1.3924277289770544,
+            2.6058667240431532,
+            3.841068853973411,
+            5.06401873996947,
+            6.281974035024177,
+            45.591078385012224,
+            46.837359008030035,
+            48.269562656991184
+          ],
+          "on_sorted": [
+            1.3484704719739966,
+            2.5569365459959954,
+            3.7880714439670555,
+            5.009857360040769,
+            6.227036924043205,
+            7.601530236017425,
+            8.89665883599082,
+            10.184356322977692
+          ],
+          "violating_ranks": []
+        },
+        "elapsed_s": {
+          "off_sorted": [
+            46.958008103014436,
+            46.96159075398464,
+            46.966199774993584,
+            46.96943418396404,
+            46.969895817979705,
+            46.97402736503864,
+            46.98433768301038,
+            48.336494382994715
+          ],
+          "on_sorted": [
+            6.336681350017898,
+            6.343723371974193,
+            6.343783548043575,
+            6.34780587797286,
+            6.349848179030232,
+            7.663642678991891,
+            8.963877208996564,
+            10.252089207991958
+          ],
+          "violating_ranks": []
+        }
+      }
+    },
+    "eight-image-turn-3-attempt0": {
+      "simultaneous_arrivals": true,
+      "distribution_passed": true,
+      "comparisons": {
+        "ttft_s": {
+          "off_sorted": [
+            1.3750554219586775,
+            40.72504167800071,
+            41.95629441604251,
+            43.202613310015295,
+            44.448309753031936,
+            45.685459820961114,
+            47.14250189199811,
+            48.45051395200426
+          ],
+          "on_sorted": [
+            1.3666490080067888,
+            2.6083977930247784,
+            3.849033710954245,
+            5.081835552002303,
+            6.322989776963368,
+            7.560595616989303,
+            9.245993493008427,
+            10.54936214000918
+          ],
+          "violating_ranks": []
+        },
+        "elapsed_s": {
+          "off_sorted": [
+            45.81006694404641,
+            45.81008768000174,
+            45.81236759101739,
+            45.815247102989815,
+            45.819323658943176,
+            45.82226561801508,
+            47.21008474001428,
+            48.518156336969696
+          ],
+          "on_sorted": [
+            7.671917715983,
+            7.676147614023648,
+            7.678398587973788,
+            7.679201770981308,
+            7.683458964980673,
+            7.692707784997765,
+            9.31495102198096,
+            10.616025368042756
+          ],
+          "violating_ranks": []
+        }
+      }
+    },
+    "generate-n4-attempt0": {
+      "simultaneous_arrivals": true,
+      "distribution_passed": true,
+      "comparisons": {
+        "ttft_s": {
+          "off_sorted": [
+            0.1424352370086126,
+            0.27975001197773963,
+            0.4193393210298382,
+            0.5802536500268616
+          ],
+          "on_sorted": [
+            0.1421917609986849,
+            0.2822244020062499,
+            0.41949235496576875,
+            0.584757331002038
+          ],
+          "violating_ranks": []
+        },
+        "elapsed_s": {
+          "off_sorted": [
+            57.03914999397239,
+            57.458465394040104,
+            57.56338394904742,
+            60.22121448098915
+          ],
+          "on_sorted": [
+            56.75909190700622,
+            56.984870818967465,
+            57.08731596899452,
+            59.704602128011174
+          ],
+          "violating_ranks": []
+        }
+      }
+    },
+    "generate-n8-attempt0": {
+      "simultaneous_arrivals": true,
+      "distribution_passed": true,
+      "comparisons": {
+        "ttft_s": {
+          "off_sorted": [
+            0.14191813103388995,
+            0.2799894349882379,
+            0.41891787899658084,
+            0.5604647129657678,
+            0.6959851310239173,
+            0.833269665017724,
+            0.9717182189924642,
+            1.1130877879913896
+          ],
+          "on_sorted": [
+            0.14497848798055202,
+            0.3232582780183293,
+            0.46370690903859213,
+            0.6024009970133193,
+            0.7411360120167956,
+            0.8777655719895847,
+            1.01415508298669,
+            1.1517666410072707
+          ],
+          "violating_ranks": []
+        },
+        "elapsed_s": {
+          "off_sorted": [
+            87.21852310100803,
+            90.46988425898599,
+            90.6601436319761,
+            90.91858086298453,
+            93.88835914200172,
+            95.29812589904759,
+            96.02113414602354,
+            96.72005106002325
+          ],
+          "on_sorted": [
+            86.15769158001058,
+            89.31393674301216,
+            89.51001007203013,
+            89.95730755798286,
+            92.93020495999372,
+            93.87407579104183,
+            95.01743289001752,
+            95.62744142999873
+          ],
+          "violating_ranks": []
+        }
+      }
+    },
+    "growing-four-turn-0-attempt0": {
+      "simultaneous_arrivals": true,
+      "distribution_passed": true,
+      "comparisons": {
+        "ttft_s": {
+          "off_sorted": [
+            21.320696342969313,
+            42.604420026007574,
+            64.02134939801181,
+            85.43327623495134
+          ],
+          "on_sorted": [
+            21.34188137203455,
+            42.66571600397583,
+            64.18387252901448,
+            85.66029861196876
+          ],
+          "violating_ranks": []
+        },
+        "elapsed_s": {
+          "off_sorted": [
+            22.291150628007017,
+            85.5159962180187,
+            85.51602589798858,
+            85.52029190998292
+          ],
+          "on_sorted": [
+            22.32211761001963,
+            42.72509977198206,
+            64.24325415299973,
+            85.71776880696416
+          ],
+          "violating_ranks": []
+        }
+      }
+    },
+    "growing-four-turn-1-attempt0": {
+      "simultaneous_arrivals": true,
+      "distribution_passed": true,
+      "comparisons": {
+        "ttft_s": {
+          "off_sorted": [
+            6.878000147989951,
+            13.730937402986456,
+            20.58600888599176,
+            27.450788472022396
+          ],
+          "on_sorted": [
+            6.870599994028453,
+            13.782753561041318,
+            20.642907459987327,
+            27.56686701194849
+          ],
+          "violating_ranks": []
+        },
+        "elapsed_s": {
+          "off_sorted": [
+            7.912954435974825,
+            27.548380097025074,
+            27.548397440987173,
+            27.549346179992426
+          ],
+          "on_sorted": [
+            6.938114040996879,
+            14.822872848017141,
+            20.710203394992277,
+            27.632793408003636
+          ],
+          "violating_ranks": []
+        }
+      }
+    },
+    "growing-four-turn-2-attempt0": {
+      "simultaneous_arrivals": true,
+      "distribution_passed": true,
+      "comparisons": {
+        "ttft_s": {
+          "off_sorted": [
+            6.95932983700186,
+            13.886432137980592,
+            20.838445689994842,
+            27.78168643102981
+          ],
+          "on_sorted": [
+            6.959125636029057,
+            13.981486218981445,
+            21.00111413799459,
+            27.937076170986984
+          ],
+          "violating_ranks": []
+        },
+        "elapsed_s": {
+          "off_sorted": [
+            8.01390286599053,
+            27.880109880992677,
+            27.88185737398453,
+            27.88391778100049
+          ],
+          "on_sorted": [
+            7.028564857027959,
+            14.050570111023262,
+            22.044413066993002,
+            28.004738554998767
+          ],
+          "violating_ranks": []
+        }
+      }
+    },
+    "growing-four-turn-3-attempt0": {
+      "simultaneous_arrivals": true,
+      "distribution_passed": true,
+      "comparisons": {
+        "ttft_s": {
+          "off_sorted": [
+            6.877511875005439,
+            13.698086414020509,
+            20.638148812984582,
+            27.566439430986065
+          ],
+          "on_sorted": [
+            7.048104192013852,
+            14.28594372101361,
+            21.10415201098658,
+            27.935775844031014
+          ],
+          "violating_ranks": []
+        },
+        "elapsed_s": {
+          "off_sorted": [
+            7.952265136002097,
+            27.66026170103578,
+            27.664368847967125,
+            27.665792229003273
+          ],
+          "on_sorted": [
+            7.117907909967471,
+            15.35323441302171,
+            22.18456373299705,
+            28.005112632003147
+          ],
+          "violating_ranks": []
+        }
+      }
+    },
+    "growing-four-turn-4-attempt0": {
+      "simultaneous_arrivals": true,
+      "distribution_passed": true,
+      "comparisons": {
+        "ttft_s": {
+          "off_sorted": [
+            7.877029766968917,
+            15.594454415957443,
+            23.323782440042123,
+            31.201957382028922
+          ],
+          "on_sorted": [
+            7.778912151989061,
+            15.882537481025793,
+            23.746837346989196,
+            31.461189586960245
+          ],
+          "violating_ranks": []
+        },
+        "elapsed_s": {
+          "off_sorted": [
+            8.958960854972247,
+            16.688853378989734,
+            31.2919175120187,
+            31.292196153022815
+          ],
+          "on_sorted": [
+            7.849037918960676,
+            15.955201303004287,
+            24.82530087098712,
+            31.530730055994354
+          ],
+          "violating_ranks": []
+        }
+      }
+    },
+    "repeated-n4-0-attempt0": {
+      "simultaneous_arrivals": true,
+      "distribution_passed": true,
+      "comparisons": {
+        "ttft_s": {
+          "off_sorted": [
+            0.13498580805025995,
+            0.26844330597668886,
+            0.40051998500712216,
+            0.5355382570414804
+          ],
+          "on_sorted": [
+            0.1359405709663406,
+            0.2700282129808329,
+            0.4059894880047068,
+            0.5382462640409358
+          ],
+          "violating_ranks": []
+        },
+        "elapsed_s": {
+          "off_sorted": [
+            19.963690099015366,
+            20.70924927201122,
+            22.42160928598605,
+            22.73324687499553
+          ],
+          "on_sorted": [
+            19.75544820202049,
+            20.440636632032692,
+            22.21642588498071,
+            22.70186237496091
+          ],
+          "violating_ranks": []
+        }
+      }
+    },
+    "repeated-n4-1-attempt0": {
+      "simultaneous_arrivals": true,
+      "distribution_passed": true,
+      "comparisons": {
+        "ttft_s": {
+          "off_sorted": [
+            0.13606777804670855,
+            0.269513756968081,
+            0.40126862801844254,
+            0.5338831000262871
+          ],
+          "on_sorted": [
+            0.13506339502055198,
+            0.26883777999319136,
+            0.4043253039708361,
+            0.5388429539743811
+          ],
+          "violating_ranks": []
+        },
+        "elapsed_s": {
+          "off_sorted": [
+            19.77420309302397,
+            20.570506090007257,
+            22.213898658985272,
+            22.666269544046372
+          ],
+          "on_sorted": [
+            19.734803534985986,
+            20.405185892013833,
+            22.18009678198723,
+            22.63545364997117
+          ],
+          "violating_ranks": []
+        }
+      }
+    },
+    "repeated-n4-2-attempt0": {
+      "simultaneous_arrivals": true,
+      "distribution_passed": true,
+      "comparisons": {
+        "ttft_s": {
+          "off_sorted": [
+            0.13658445101464167,
+            0.2699134540162049,
+            0.402270853985101,
+            0.531865109980572
+          ],
+          "on_sorted": [
+            0.13791878102347255,
+            0.27043611800763756,
+            0.4026922209886834,
+            0.5373873180360533
+          ],
+          "violating_ranks": []
+        },
+        "elapsed_s": {
+          "off_sorted": [
+            19.795054364018142,
+            20.462146370031405,
+            22.230011981038842,
+            22.68302589096129
+          ],
+          "on_sorted": [
+            19.8546910029836,
+            20.525356917001773,
+            22.280757802014705,
+            22.73681279196171
+          ],
+          "violating_ranks": []
+        }
+      }
+    }
+  },
+  "method_note": "Post-observation correction retained explicitly. Client indices do not encode arrival priority for zero-offset concurrent sends. Individual waits can increase; no per-client latency guarantee is claimed. Sorted waits are assessed at every observed rank, with the same tolerances. Explicitly staggered cases retain strict per-request checks. These are small finite samples, not population percentiles."
+}

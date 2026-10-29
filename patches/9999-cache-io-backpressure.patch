@@ -1,0 +1,329 @@
+--- a/zig/src/core/lane_host.zig
++++ b/zig/src/core/lane_host.zig
+@@ -1,3 +1,5 @@
++//! Modified for deepseek-spark-cache-io (2026): opt-in cache I/O backpressure and its regression tests.
++//! See the overlay repository NOTICE and docs/design.md; upstream attribution is retained.
+ //! The lane core served to the HTTP threads: one thread owns ``core`` and steps rounds while any stream lives.
+ //!
+ //! Pending durable restores and continuation telemetry port wojo's GLM 0110 (PR #124; the scheduler hooks) and 0111
+@@ -74,6 +76,9 @@
+     interleave_ns: i96 = 0,
+     filling: ?*Job = null,
+     between_err: ?anyerror = null,
++    io_backpressure: bool = false,
++    image_io_min_tokens: usize = 8192,
++    admit_io_blocked: bool = false,
+     // -- parked requests (0110). The lists are the engine thread's; changes take the lock (status reads their lengths).
+     ready: std.ArrayList(*Job) = .empty, // woken: admitted before the queue, in the order they woke
+     loading: std.ArrayList(Load) = .empty, // each waits for a restore job (several may share one)
+@@ -214,6 +219,7 @@
+         kept0: u64 = 0, // the store's kept count when the job looked it up
+         tried_disk: bool = false, // it waited for a restore once: a later lookup takes what memory has
+         deferred_since: ?i96 = null, // its restore was first refused for capacity then (asked again until defer_ns)
++        admit_io_since: ?i96 = null,
+         join: pc.Join = .{}, // its conversation (0111)
+         parent: ?u64 = null, // the durable point its pass resumes from, and where
+         fork: u32 = 0,
+@@ -279,7 +285,8 @@
+         enforced.loop_guard = true;
+         var ms: i96 = 0;
+         if (std.c.getenv("TF_DS_PREFILL_INTERLEAVE_MS")) |v| ms = std.fmt.parseInt(u32, std.mem.span(v), 10) catch 0;
+-        return .{ .gpa = gpa, .io = io, .core = core, .info_ = enforced, .interleave_ns = ms * std.time.ns_per_ms };
++        const io_backpressure = if (std.c.getenv("TF_SPILL_IO_BACKPRESSURE")) |v| std.mem.eql(u8, std.mem.span(v), "1") else false;
++        return .{ .gpa = gpa, .io = io, .core = core, .info_ = enforced, .interleave_ns = ms * std.time.ns_per_ms, .io_backpressure = io_backpressure };
+     }
+ 
+     /// The tier's switches (before start). Telemetry is published from here on when either is on: a tier on the cache
+@@ -555,6 +562,7 @@
+ 
+     /// Prefills the next queued request into a free lane; false when none waits or no lane is free.
+     fn admitOne(h: *LaneHost) bool {
++        h.admit_io_blocked = false;
+         if (h.isBroken()) return false;
+         h.lock();
+         if ((h.queued.items.len == 0 and h.ready.items.len == 0) or h.admitted.items.len >= h.info_.lanes) {
+@@ -576,10 +584,23 @@
+             }
+             h.finish_until = null;
+         }
+-        const job = if (h.ready.items.len > 0) h.ready.orderedRemove(0) else h.queued.orderedRemove(0);
++        const from_ready = h.ready.items.len > 0;
++        const job = if (from_ready) h.ready.orderedRemove(0) else h.queued.orderedRemove(0);
+         if (h.parking()) {
+             h.unlock();
+-            if (h.park(job)) return true; // waits for a restore, holding no lane
++            if (h.park(job)) return true; // start eligible restores before considering a long image pass
++            if (h.io_backpressure and h.waitBeforeImage(job)) {
++                h.lock();
++                const list = if (from_ready) &h.ready else &h.queued;
++                list.insert(h.gpa, 0, job) catch {
++                    h.unlock();
++                    h.finish(job, .failed, "out of memory");
++                    return true;
++                };
++                h.admit_io_blocked = true;
++                h.unlock();
++                return false;
++            }
+             h.lock();
+         }
+         h.admitted.append(h.gpa, job) catch {
+@@ -920,8 +941,8 @@
+                 continue;
+             }
+             if (h.core.activeCount() == 0) {
+-                if (h.cancels.items.len == 0 and ((h.queued.items.len == 0 and h.ready.items.len == 0) or h.admitted.items.len >= h.info_.lanes)) {
+-                    const ms: i64 = if (h.pending()) poll_ns / std.time.ns_per_ms else 100; // work in flight: poll it
++                if (h.cancels.items.len == 0 and (h.admit_io_blocked or (h.queued.items.len == 0 and h.ready.items.len == 0) or h.admitted.items.len >= h.info_.lanes)) {
++                    const ms: i64 = if (h.admit_io_blocked or h.pending()) poll_ns / std.time.ns_per_ms else 100; // work in flight: poll it
+                     h.wake.waitTimeout(h.io, &h.mutex, .{ .duration = .{ .raw = .fromMilliseconds(ms), .clock = .awake } }) catch {};
+                 }
+                 h.unlock();
+@@ -1022,6 +1043,21 @@
+         if (h.loading.items.len > 0 or h.ready.items.len > 0 or h.deferred.items.len > 0) return true;
+         const store = h.cache orelse return false;
+         return store.busy();
++    }
++
++    /// Image prefills have no service fence; let pending cache I/O progress first, within the existing load-wait bound.
++    fn waitBeforeImage(h: *LaneHost, job: *Job) bool {
++        if (job.request.images.len == 0) return false;
++        const store = h.cache orelse return false;
++        const r = job.request;
++        const have = if (cacheable(r)) store.find(keyOf(r), r.chunks) else null;
++        const at: usize = if (have) |entry| entry.at else 0;
++        if (r.prompt.len -| at <= h.image_io_min_tokens) return false;
++        if (h.loading.items.len == 0 and !store.busy()) return false;
++        const now = std.Io.Clock.awake.now(h.io).toNanoseconds();
++        const began = job.admit_io_since orelse now;
++        job.admit_io_since = began;
++        return now - began < h.tier.load_wait_ns;
+     }
+ 
+     /// Before `job`'s pass (engine thread, no lock): park it on a restore of a longer durable point (once). False:
+--- a/zig/src/core/lane_host_tier_test.zig
++++ b/zig/src/core/lane_host_tier_test.zig
+@@ -1,3 +1,5 @@
++//! Modified for deepseek-spark-cache-io (2026): opt-in cache I/O backpressure and its regression tests.
++//! See the overlay repository NOTICE and docs/design.md; upstream attribution is retained.
+ //! LaneHost with a durable tier (wojo's GLM 0110's scheduler hooks): requests parked on restores, their service
+ //! between rounds, between prompt chunks (the interleave off) and at idle, cancellation and shutdown, through the fake
+ //! lane backend and an in-memory tier.
+@@ -112,6 +114,13 @@
+ 
+     /// `pre` runs on the host before its thread starts (the robustness tests' policies).
+     pub fn createWith(sp: api.Spill, pre: ?*const fn (*Rig) void) !*Rig {
++        const r = try createUnstarted(sp, pre);
++        errdefer r.destroy();
++        try r.host.start();
++        return r;
++    }
++
++    pub fn createUnstarted(sp: api.Spill, pre: ?*const fn (*Rig) void) !*Rig {
+         const r = try gpa.create(Rig);
+         errdefer gpa.destroy(r);
+         r.* = .{ .cfg = undefined, .target = .{ .gpa = gpa }, .core = undefined, .store = undefined, .tier = .{ .gpa = gpa, .codec = .{ .ctx = r, .pack = pack, .unpack = unpack } }, .host = undefined };
+@@ -124,7 +133,6 @@
+         r.host.cache = &r.store;
+         r.host.configure(sp);
+         if (pre) |f| f(r);
+-        try r.host.start();
+         return r;
+     }
+ 
+@@ -444,3 +452,195 @@
+     host.configure(disk);
+     try std.testing.expect(!disk.unbound(host.engine()));
+ }
++
++fn enableIo(r: *Rig) void {
++    if (@hasField(LaneHost, "io_backpressure")) {
++        r.host.io_backpressure = true;
++        r.host.image_io_min_tokens = 8;
++    }
++}
++
++test "io-only: a short fresh image does not wait behind unrelated disk I/O" {
++    const r = try Rig.createUnstarted(.{ .load_wait_ms = 2000 }, enableIo);
++    defer r.destroy();
++    r.tier.gate.store(false, .release);
++    _ = try r.point(&t2, 8);
++    var disk: Box = .{};
++    defer disk.deinit();
++    var img: Box = .{};
++    defer img.deinit();
++    defer r.stop();
++    const ids = [_]u32{ 4, 2, 1, 3 };
++    const short: Request = .{ .prompt = &ids, .images = &test_images, .max_tokens = 1 };
++    try r.host.engine().submit(1, &disk_request, disk.sink());
++    try r.host.engine().submit(2, &short, img.sink());
++    try r.host.start();
++    try std.testing.expectEqual(Reason.length, try waitBounded(&img));
++    try std.testing.expect(disk.finished() == null);
++    r.tier.gate.store(true, .release);
++    try std.testing.expectEqual(Reason.length, try waitBounded(&disk));
++    try img.exact(&ids);
++    try disk.exact(&t2);
++    r.stop();
++    try std.testing.expectEqual(@as(u64, 0), r.host.host_counts.restore_wait_timeouts);
++}
++
++fn waitBounded(b: *Box) !Reason {
++    for (0..5000) |_| {
++        if (b.finished()) |why| return why;
++        try std.Io.sleep(io, .fromMilliseconds(1), .awake);
++    }
++    return error.Timeout;
++}
++
++const image_ids: [32]u32 = @splat(7);
++const test_images = [_]api.Image{.{ .at = 0, .tokens = 1, .bytes = "" }};
++const image_request: Request = .{ .prompt = &image_ids, .images = &test_images, .max_tokens = 1 };
++const disk_request: Request = .{ .prompt = &t2, .max_tokens = 1, .history_len = 14 };
++
++fn imageStarvation(enabled: bool, expected_cached: u32) !void {
++    const r = try Rig.createUnstarted(.{ .load_ms = 5, .load_wait_ms = 200 }, if (enabled) enableIo else null);
++    defer r.destroy();
++    const Hook = struct {
++        fn call(_: *anyopaque, s: *lanes.Stream, _: usize) void {
++            if (s.prompt_len == image_ids.len) std.Io.sleep(io, .fromMilliseconds(300), .awake) catch {};
++        }
++    };
++    r.target.prefill_chunks = 1;
++    r.target.prefill_hook = Hook.call;
++    r.target.prefill_hook_ctx = r;
++    _ = try r.point(&t2, 8);
++    var disk: Box = .{};
++    defer disk.deinit();
++    var img: Box = .{};
++    defer img.deinit();
++    defer r.stop();
++    try r.host.engine().submit(1, &disk_request, disk.sink());
++    try r.host.engine().submit(2, &image_request, img.sink());
++    try r.host.start();
++    try std.testing.expectEqual(Reason.length, try waitBounded(&disk));
++    try std.testing.expectEqual(Reason.length, try waitBounded(&img));
++    r.stop();
++    std.debug.print("cached={d}, committed={d}, timeouts={d}\n", .{ disk.cached.?, r.store.stats.disk_hits_committed, r.host.host_counts.restore_wait_timeouts });
++    try std.testing.expectEqual(@as(?u32, expected_cached), disk.cached);
++    try std.testing.expectEqual(@as(u64, if (expected_cached == 0) 1 else 0), r.host.host_counts.restore_wait_timeouts);
++    try disk.exact(&t2);
++    try img.exact(&image_ids);
++    try std.testing.expectEqual(@as(u64, 0), r.tier.misuse);
++}
++
++test "io-only: pending restore survives an image prefill longer than its wait bound" {
++    try imageStarvation(true, 8);
++}
++
++test "io-only: disabled switch preserves the original image timeout behavior" {
++    try imageStarvation(false, 0);
++}
++
++test "io-only: existing full-tier retry and bounded fallback work without a new capacity gate" {
++    for ([_]bool{ false, true }) |never_opens| {
++        const r = try Rig.createUnstarted(.{ .load_ms = 5, .defer_ms = if (never_opens) 30 else 1000 }, enableIo);
++        defer r.destroy();
++        r.host.tier.defer_min = 1;
++        r.tier.full = if (never_opens) 1_000_000 else 3;
++        _ = try r.point(&t2, 8);
++        var b: Box = .{};
++        defer b.deinit();
++        defer r.stop();
++        try r.host.engine().submit(1, &disk_request, b.sink());
++        try r.host.start();
++        try std.testing.expectEqual(Reason.length, try waitBounded(&b));
++        r.stop();
++        try std.testing.expectEqual(@as(?u32, if (never_opens) 0 else 8), b.cached);
++        try std.testing.expectEqual(@as(u64, if (never_opens) 1 else 0), r.host.host_counts.restores_deferred_expired);
++        try b.exact(&t2);
++        try std.testing.expectEqual(@as(u64, 0), r.tier.misuse);
++    }
++}
++
++test "io-only: image held behind I/O can be cancelled and shutdown drains both waiters" {
++    for ([_]bool{ false, true }) |shutdown| {
++        const r = try Rig.createUnstarted(.{ .load_ms = 5, .load_wait_ms = 2000 }, enableIo);
++        defer r.destroy();
++        r.tier.gate.store(false, .release);
++        _ = try r.point(&t2, 8);
++        var disk: Box = .{};
++        defer disk.deinit();
++        var img: Box = .{};
++        defer img.deinit();
++        defer r.stop();
++        try r.host.engine().submit(1, &disk_request, disk.sink());
++        try r.host.engine().submit(2, &image_request, img.sink());
++        try r.host.start();
++        try r.until(struct {
++            fn ok(s: api.CacheStats) bool {
++                return s.restore_waits == 1;
++            }
++        }.ok);
++        if (shutdown) r.stop() else r.host.engine().cancel(2);
++        try std.testing.expectEqual(Reason.cancelled, try waitBounded(&img));
++        try std.testing.expectEqual(@as(?u32, null), img.cached);
++        r.tier.gate.store(true, .release);
++        try std.testing.expectEqual(if (shutdown) Reason.cancelled else Reason.length, try waitBounded(&disk));
++        r.stop();
++        try std.testing.expectEqual(@as(u64, 0), r.tier.misuse);
++        try std.testing.expectEqual(@as(u64, if (shutdown) 1 else 0), r.tier.cancels);
++    }
++}
++
++test "io-only: fresh text is admitted while a disk restore is pending" {
++    const r = try Rig.createUnstarted(.{ .load_wait_ms = 2000 }, enableIo);
++    defer r.destroy();
++    r.tier.gate.store(false, .release);
++    _ = try r.point(&t2, 8);
++    var disk: Box = .{};
++    defer disk.deinit();
++    var fresh: Box = .{};
++    defer fresh.deinit();
++    defer r.stop();
++    const text: Request = .{ .prompt = &image_ids, .max_tokens = 1 };
++    try r.host.engine().submit(1, &disk_request, disk.sink());
++    try r.host.engine().submit(2, &text, fresh.sink());
++    try r.host.start();
++    try std.testing.expectEqual(Reason.length, try waitBounded(&fresh));
++    try std.testing.expect(disk.finished() == null);
++    r.tier.gate.store(true, .release);
++    try std.testing.expectEqual(Reason.length, try waitBounded(&disk));
++    try fresh.exact(&image_ids);
++    try disk.exact(&t2);
++}
++
++test "io-only: permanently busy writes cannot block an image forever" {
++    const r = try Rig.createUnstarted(.{ .load_wait_ms = 10 }, enableIo);
++    defer r.destroy();
++    const Busy = struct {
++        fn busy(_: *anyopaque) bool {
++            return true;
++        }
++    };
++    var vtable = r.store.tier.?.vtable.*;
++    vtable.busy = Busy.busy;
++    r.store.tier.?.vtable = &vtable;
++    var img: Box = .{};
++    defer img.deinit();
++    defer r.stop();
++    try r.host.engine().submit(1, &image_request, img.sink());
++    try r.host.start();
++    try std.testing.expectEqual(Reason.length, try waitBounded(&img));
++    try img.exact(&image_ids);
++}
++
++test "io-only: no pending work leaves the image path and decode budget alone" {
++    const r = try Rig.createUnstarted(.{}, enableIo);
++    defer r.destroy();
++    r.host.interleave_ns = 250 * std.time.ns_per_ms;
++    var img: Box = .{};
++    defer img.deinit();
++    defer r.stop();
++    try r.host.engine().submit(1, &image_request, img.sink());
++    try r.host.start();
++    try std.testing.expectEqual(Reason.length, try waitBounded(&img));
++    r.stop();
++    try std.testing.expectEqual(@as(i96, 250 * std.time.ns_per_ms), r.host.interleave_ns);
++    try img.exact(&image_ids);
++}

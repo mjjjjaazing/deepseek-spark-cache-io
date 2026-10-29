@@ -1,0 +1,53 @@
+{
+  "public_source_preparation": "passed from pinned public repositories",
+  "baseline_files_verified": 1311,
+  "baseline_cpu_tests": 89,
+  "candidate_cpu_tests": 97,
+  "negative_control": "expected starvation failure reproduced",
+  "test_runner_checks": [
+    {
+      "arm": "control",
+      "filter": null,
+      "exit": 0,
+      "expected_exit": 0,
+      "verified": true
+    },
+    {
+      "arm": "candidate",
+      "filter": null,
+      "exit": 0,
+      "expected_exit": 0,
+      "verified": true
+    },
+    {
+      "arm": "negative",
+      "filter": "io-only: pending restore survives",
+      "exit": 1,
+      "expected_exit": 1,
+      "verified": true
+    },
+    {
+      "arm": "candidate",
+      "filter": "io-only:",
+      "exit": 0,
+      "expected_exit": 0,
+      "verified": true
+    },
+    {
+      "arm": "negative",
+      "filter": "io-only: existing full-tier",
+      "exit": 0,
+      "expected_exit": 0,
+      "verified": true
+    }
+  ],
+  "runtime_and_test_body_parity_after_notice_comments": {
+    "zig/src/core/lane_host.zig": true,
+    "zig/src/core/lane_host_tier_test.zig": true
+  },
+  "offline_payload_replay_matched_requests": 351,
+  "live_inference_sent_during_publication": false,
+  "production_touched_during_publication": false,
+  "hash_checks": "108 paired plus 4 restart comparisons match engine 12-hex token hash prefixes, full text/reasoning SHA256, and canonical tool-call semantics.",
+  "public_harness_guard": "Offline fake-client test rejects inference between cohorts before sending another request."
+}

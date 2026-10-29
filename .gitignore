@@ -1,0 +1,13 @@
+__pycache__/
+*.pyc
+.DS_Store
+.env
+.env.*
+runs/
+prepared/
+private/
+.zig-cache/
+zig-out/
+*.sse
+*.tar.gz
+*.zip

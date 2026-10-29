@@ -1,0 +1,113 @@
+{
+  "phases": {
+    "off": {
+      "cases": 21,
+      "requests": 88,
+      "generated_tokens": 58189,
+      "max_answer_tokens": 13785,
+      "max_prompt_tokens": 106304
+    },
+    "on": {
+      "cases": 21,
+      "requests": 88,
+      "generated_tokens": 58189,
+      "max_answer_tokens": 13785,
+      "max_prompt_tokens": 106304
+    },
+    "fairness-v2-off": {
+      "cases": 5,
+      "requests": 20,
+      "generated_tokens": 60,
+      "max_answer_tokens": 3,
+      "max_prompt_tokens": 106287
+    },
+    "fairness-v2-on": {
+      "cases": 5,
+      "requests": 20,
+      "generated_tokens": 60,
+      "max_answer_tokens": 3,
+      "max_prompt_tokens": 106287
+    },
+    "canary": {
+      "cases": 33,
+      "requests": 128,
+      "generated_tokens": 196304,
+      "max_answer_tokens": 2844,
+      "max_prompt_tokens": 150925
+    },
+    "persisted": {
+      "cases": 4,
+      "requests": 7,
+      "generated_tokens": 3135,
+      "max_answer_tokens": 818,
+      "max_prompt_tokens": 150925
+    }
+  },
+  "paired_exact_output_comparisons": 108,
+  "normal_output_allowance": 32768,
+  "eight_history_repeat": {
+    "times_s": {
+      "off": [
+        48.41609516600147,
+        48.36119459802285,
+        48.54008081497159
+      ],
+      "on": [
+        10.56691834697267,
+        10.27323324099416,
+        10.634950431005564
+      ]
+    },
+    "medians_s": {
+      "off": 48.41609516600147,
+      "on": 10.56691834697267
+    },
+    "time_reduction_pct": 78.17478193823256
+  },
+  "trial_duration_s": 1855.868957152008,
+  "trial_rounds": 15,
+  "restart_proof": {
+    "cached_tokens": [
+      147456,
+      147456,
+      149504,
+      149504
+    ],
+    "ttft_s": [
+      1.2079365749959834,
+      2.5523429759778082,
+      3.38520343095297,
+      4.591964499966707
+    ],
+    "disk_commits": 4.0,
+    "exact_output_hashes": true
+  },
+  "sampled_min_available_memory_gib": 5.448276519775391,
+  "original_strict_checks_passed": false,
+  "fixed_arrival_confirmation_passed": true,
+  "scope": "Finite deterministic synthetic validation and thirty-minute workload; not a full-day or exhaustive production guarantee.",
+  "whole_arm_accounting": {
+    "off": {
+      "expected": {
+        "prompt_tokens_total": 4789905,
+        "generation_tokens_total": 58189
+      },
+      "observed": {
+        "prompt_tokens_total": 4789905.0,
+        "generation_tokens_total": 58189.0
+      },
+      "clean": true
+    },
+    "on": {
+      "expected": {
+        "prompt_tokens_total": 4789905,
+        "generation_tokens_total": 58189
+      },
+      "observed": {
+        "prompt_tokens_total": 4789905.0,
+        "generation_tokens_total": 58189.0
+      },
+      "clean": true
+    }
+  }
+}

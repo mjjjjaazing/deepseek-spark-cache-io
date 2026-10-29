@@ -1,0 +1,17 @@
+{
+  "recipe": {
+    "url": "https://github.com/MiaAI-Lab/DeepSeek-v4.1-Flash-1017-2x-DGX-Sparks.git",
+    "commit": "27741e176a9e5b98c10c9c7d012fd3e4fcdc19b6"
+  },
+  "engine": {
+    "url": "https://github.com/bertholomus/TensorFold.git",
+    "commit": "629c524a0ea57512a5342abb498d1b7c25353343"
+  },
+  "zig": "0.17.0",
+  "public_baseline_patches": 26,
+  "baseline_files_verified": 1311,
+  "measured_patch_sha256": "1dd9a994d5b699ad607cddbe4b87009debf99619e5b1dfb0749c1a9b80d04215",
+  "publication_patch_sha256": "3dcf8d01b258ad5d0d5beada3d7301f94fa17ce37683de9d2aa81df33308782f",
+  "publication_difference": "Two module-documentation notice lines added per modified file. Runtime and test bodies are byte-identical to the measured source after removing those notices.",
+  "publication_notices_lines_per_file": 2
+}

@@ -1,0 +1,30 @@
+deepseek-spark-cache-io
+Copyright 2026 contributors to this extension
+
+This is an independent opt-in extension to MiaAI-Lab's DeepSeek-V4.1-Flash-1017
+recipe, not an official MiaAI, TensorFold, DeepSeek or NVIDIA release.
+
+Original work and notices are retained in:
+  licenses/MiaAI-NOTICE
+  licenses/MiaAI-CREDITS.md
+  licenses/TensorFold-NOTICE
+  licenses/TensorFold-THIRD-PARTY-NOTICES.md
+  licenses/tensorfold/
+
+Changes in this extension (Apache-2.0 section 4(b)):
+  patches/9999-cache-io-backpressure.patch modifies
+    zig/src/core/lane_host.zig
+    zig/src/core/lane_host_tier_test.zig
+  It adds a default-off host admission gate for long image prefills while cache
+  I/O is pending, bounded by the existing load-wait policy, plus eight CPU tests.
+  The patch adds prominent module-documentation modification notices to both files.
+  The runtime and test bodies match the measured implementation; those notice
+  comments are the only source difference introduced for public distribution.
+
+The preparation tools, portable synthetic workloads, result extraction and
+explanatory documentation are additions to this extension. They do not replace
+or claim authorship of the model, quantization, engine, kernels, RDMA transport,
+spill store, parked-restore machinery, or existing prefill interleave.
+
+No weights, kernel binaries, credentials or private service controllers are
+redistributed. Third-party code quoted as patch context retains its license.
